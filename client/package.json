@@ -7,7 +7,8 @@
   "scripts": {
     "start": "electron .",
     "build": "electron-builder --win portable",
-    "build:dir": "electron-builder --win --dir"
+    "build:dir": "electron-builder --win --dir",
+    "build:packager": "electron-packager . RwScanner --platform=win32 --arch=x64 --out=dist --overwrite --ignore=\"dist|node_modules\""
   },
   "build": {
     "appId": "com.rwscanner.app",
@@ -16,7 +17,9 @@
       "target": [
         {
           "target": "portable",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "src/icon.png"
@@ -35,7 +38,9 @@
     ]
   },
   "devDependencies": {
+    "@electron/packager": "^20.3.0",
     "electron": "^28.1.0",
-    "electron-builder": "^24.9.1"
+    "electron-builder": "^24.9.1",
+    "electron-packager": "^17.1.2"
   }
 }
