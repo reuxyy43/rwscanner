@@ -150,8 +150,10 @@ async function initializeDatabase() {
       username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       role TEXT NOT NULL DEFAULT 'MODERATOR',
+      created_by INTEGER,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      last_login DATETIME
+      last_login DATETIME,
+      FOREIGN KEY (created_by) REFERENCES users(id)
     );
 
     CREATE TABLE IF NOT EXISTS pins (
@@ -250,12 +252,12 @@ async function initializeDatabase() {
     wrapper.prepare("INSERT OR IGNORE INTO system_settings (key, value) VALUES (?, ?)").run(key, value);
   }
 
-  // Create default admin
-  const adminExists = wrapper.prepare('SELECT id FROM users WHERE username = ?').get('admin');
+  // Create head admin
+  const adminExists = wrapper.prepare('SELECT id FROM users WHERE username = ?').get('rwacleader');
   if (!adminExists) {
-    const hash = bcrypt.hashSync('admin123', 10);
-    wrapper.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)').run('admin', hash, 'ADMIN');
-    console.log('[DB] Default admin user created (admin / admin123)');
+    const hash = bcrypt.hashSync('C_37228863612!', 10);
+    wrapper.prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)').run('rwacleader', hash, 'HEAD_ADMIN');
+    console.log('[DB] Head admin created (rwacleader)');
   }
 
   saveDatabase();

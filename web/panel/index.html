@@ -60,6 +60,10 @@
 
       <div class="nav-section">
         <div class="nav-section-title">Yönetim</div>
+        <div class="nav-item" data-page="users">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          Kullanıcılar
+        </div>
         <div class="nav-item" data-page="signatures">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           İmzalar
@@ -214,6 +218,27 @@
         <div id="allDetectionsList"></div>
       </div>
 
+      <!-- Users -->
+      <div class="page-section" id="page-users">
+        <div class="page-header">
+          <div>
+            <h1>Kullanıcı Yönetimi</h1>
+            <p class="subtitle">Yetkili hesapları yönetin</p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="createUserBtn" style="width:auto;">+ Yeni Kullanıcı</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr><th>Kullanıcı</th><th>Rol</th><th>Oluşturan</th><th>Oluşturma</th><th>Son Giriş</th><th>İşlem</th></tr>
+            </thead>
+            <tbody id="usersBody">
+              <tr><td colspan="6" class="empty-state">Kullanıcı bulunmuyor</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Signatures -->
       <div class="page-section" id="page-signatures">
         <div class="page-header">
@@ -267,6 +292,31 @@
         </div>
       </div>
     </main>
+  </div>
+
+  <div class="modal-overlay" id="createUserModal">
+    <div class="modal">
+      <h3>Yeni Kullanıcı Oluştur</h3>
+      <div class="form-group">
+        <label>Kullanıcı Adı</label>
+        <input type="text" class="form-input" id="newUsername" placeholder="Kullanıcı adı">
+      </div>
+      <div class="form-group">
+        <label>Şifre</label>
+        <input type="password" class="form-input" id="newPassword" placeholder="Şifre">
+      </div>
+      <div class="form-group">
+        <label>Rol</label>
+        <select class="form-input" id="newRole">
+          <option value="MODERATOR">Moderatör</option>
+          <option value="ADMIN">Admin</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-sm" onclick="closeModal('createUserModal')">İptal</button>
+        <button class="btn btn-primary btn-sm" onclick="submitCreateUser()">Oluştur</button>
+      </div>
+    </div>
   </div>
 
   <!-- Modals -->

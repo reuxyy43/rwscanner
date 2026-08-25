@@ -30,6 +30,7 @@ const DETECTION_TYPES = {
 };
 
 const USER_ROLES = {
+  HEAD_ADMIN: 'HEAD_ADMIN',
   ADMIN: 'ADMIN',
   MODERATOR: 'MODERATOR'
 };

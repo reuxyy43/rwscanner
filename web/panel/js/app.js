@@ -16,6 +16,7 @@ function setupEventListeners() {
   document.getElementById('loginForm').addEventListener('submit', handleLogin);
   document.getElementById('createPinBtn').addEventListener('click', () => openModal('createPinModal'));
   document.getElementById('createSigBtn').addEventListener('click', () => openModal('createSigModal'));
+  document.getElementById('createUserBtn').addEventListener('click', () => openModal('createUserModal'));
   document.getElementById('logoutBtn').addEventListener('click', handleLogout);
 
   document.querySelectorAll('.nav-item[data-page]').forEach(item => {
@@ -63,6 +64,7 @@ function showPage(page) {
   if (page === 'pins') loadPins();
   if (page === 'scans') loadScans();
   if (page === 'detections') loadAllDetections();
+  if (page === 'users') loadUsers();
   if (page === 'signatures') loadSignatures();
   if (page === 'settings') loadSettings();
   if (page === 'audit') loadAuditLogs();
@@ -486,6 +488,64 @@ async function loadAuditLogs() {
         <td style="color: var(--text-muted);">${l.ip_address || '-'}</td>
       </tr>
     `).join('');
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+// Users
+async function loadUsers() {
+  try {
+    const data = await api('/auth/users');
+    const tbody = document.getElementById('usersBody');
+    const roleMap = { HEAD_ADMIN: 'Baş Admin', ADMIN: 'Admin', MODERATOR: 'Moderatör' };
+    if (data.users.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Kullanıcı bulunmuyor</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.users.map(u => `
+      <tr>
+        <td style="font-weight: 600;${u.role === 'HEAD_ADMIN' ? ' color: var(--accent);' : ''}">${u.username}</td>
+        <td><span class="badge badge-${u.role === 'HEAD_ADMIN' ? 'active' : u.role === 'ADMIN' ? 'warning' : ''}">${roleMap[u.role] || u.role}</span></td>
+        <td>${u.created_by || '-'}</td>
+        <td>${formatTime(u.created_at)}</td>
+        <td>${u.last_login ? formatTime(u.last_login) : 'Hiç giriş yapmadı'}</td>
+        <td>
+          ${u.role !== 'HEAD_ADMIN' ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})" style="width:auto; padding: 4px 10px;">Sil</button>` : '<span style="color:var(--text-secondary);font-size:12px;">Korunuyor</span>'}
+        </td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function submitCreateUser() {
+  const username = document.getElementById('newUsername').value.trim();
+  const password = document.getElementById('newPassword').value;
+  const role = document.getElementById('newRole').value;
+  if (!username || !password) { toast('Kullanıcı adı ve şifre gerekli', 'error'); return; }
+  try {
+    await api('/auth/users', {
+      method: 'POST',
+      body: JSON.stringify({ username, password, role })
+    });
+    closeModal('createUserModal');
+    document.getElementById('newUsername').value = '';
+    document.getElementById('newPassword').value = '';
+    toast('Kullanıcı oluşturuldu');
+    loadUsers();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+async function deleteUser(id) {
+  if (!confirm('Bu kullanıcı silinsin mi?')) return;
+  try {
+    await api(`/auth/users/${id}`, { method: 'DELETE' });
+    toast('Kullanıcı silindi');
+    loadUsers();
   } catch (err) {
     toast(err.message, 'error');
   }
