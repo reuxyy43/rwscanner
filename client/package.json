@@ -1,0 +1,41 @@
+{
+  "name": "rwscanner",
+  "version": "1.0.0",
+  "description": "RwScanner - FiveM Security Scanner",
+  "main": "src/main.js",
+  "author": "RW Team",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable",
+    "build:dir": "electron-builder --win --dir"
+  },
+  "build": {
+    "appId": "com.rwscanner.app",
+    "productName": "RwScanner",
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "src/icon.png"
+    },
+    "portable": {
+      "artifactName": "RwScanner.exe"
+    },
+    "files": [
+      "src/**/*"
+    ],
+    "extraFiles": [
+      {
+        "from": "node_modules/electron/dist/ffmpeg.dll",
+        "to": "ffmpeg.dll"
+      }
+    ]
+  },
+  "devDependencies": {
+    "electron": "^28.1.0",
+    "electron-builder": "^24.9.1"
+  }
+}

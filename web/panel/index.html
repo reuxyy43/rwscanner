@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RwScanner Panel</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Login -->
+  <div class="login-container" id="loginView">
+    <div class="login-box">
+      <div class="logo-icon">RW</div>
+      <h2>Yetkili Girişi</h2>
+      <p>RwScanner Yönetim Paneli</p>
+      <div class="error-msg" id="loginError"></div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Kullanıcı Adı</label>
+          <input type="text" class="form-input" id="loginUsername" autocomplete="username" required>
+        </div>
+        <div class="form-group">
+          <label>Şifre</label>
+          <input type="password" class="form-input" id="loginPassword" autocomplete="current-password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Giriş Yap</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- App -->
+  <div class="app-layout" id="appLayout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="icon">RW</div>
+        RwScanner
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Menü</div>
+        <div class="nav-item active" data-page="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Genel Bakış
+        </div>
+        <div class="nav-item" data-page="pins">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+          PIN Oluştur
+        </div>
+        <div class="nav-item" data-page="scans">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Taramalar
+        </div>
+        <div class="nav-item" data-page="detections">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          Tespitler
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Yönetim</div>
+        <div class="nav-item" data-page="signatures">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          İmzalar
+        </div>
+        <div class="nav-item" data-page="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Sistem Ayarları
+        </div>
+        <div class="nav-item" data-page="audit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Audit Logları
+        </div>
+      </div>
+
+      <div style="padding: 12px 20px; margin-top: auto; border-top: 1px solid var(--border);">
+        <div class="nav-item" id="logoutBtn" style="color: var(--danger);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Çıkış Yap
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <!-- Dashboard -->
+      <div class="page-section active" id="page-dashboard">
+        <div class="page-header">
+          <div>
+            <h1>Genel Bakış</h1>
+            <p class="subtitle">RwScanner yönetim paneli</p>
+          </div>
+        </div>
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-card"><div class="label">Aktif Taramalar</div><div class="value accent" id="statActive">0</div></div>
+          <div class="stat-card"><div class="label">Bugünkü Taramalar</div><div class="value" id="statToday">0</div></div>
+          <div class="stat-card"><div class="label">Şüpheli Taramalar</div><div class="value warning" id="statSuspicious">0</div></div>
+          <div class="stat-card"><div class="label">Güçlü Tespitler</div><div class="value danger" id="statCritical">0</div></div>
+          <div class="stat-card"><div class="label">Aktif PIN</div><div class="value accent" id="statActivePins">0</div></div>
+          <div class="stat-card"><div class="label">Toplam PIN</div><div class="value" id="statTotalPins">0</div></div>
+        </div>
+        <div class="table-container">
+          <div class="table-header">
+            <h3>Son PIN'ler</h3>
+          </div>
+          <table>
+            <thead>
+              <tr><th>PIN</th><th>Durum</th><th>Oluşturan</th><th>Kullanım</th><th>Zaman</th></tr>
+            </thead>
+            <tbody id="recentPinsBody">
+              <tr><td colspan="5" class="empty-state">Henüz PIN bulunmuyor</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="table-container" style="margin-top: 24px;">
+          <div class="table-header">
+            <h3>Son Taramalar</h3>
+          </div>
+          <table>
+            <thead>
+              <tr><th>Scan ID</th><th>Durum</th><th>Risk</th><th>Tespitler</th><th>Zaman</th></tr>
+            </thead>
+            <tbody id="recentScansBody">
+              <tr><td colspan="5" class="empty-state">Henüz tarama bulunmuyor</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Pins -->
+      <div class="page-section" id="page-pins">
+        <div class="page-header">
+          <div>
+            <h1>PIN Oluştur</h1>
+            <p class="subtitle">Yeni tarama PIN'i oluşturun</p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="createPinBtn" style="width:auto;">+ Yeni PIN</button>
+        </div>
+
+        <div id="newPinDisplay" style="display:none;">
+          <div class="pin-display">
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">Yeni PIN Oluşturuldu</div>
+            <div class="pin-code" id="newPinCode"></div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-top:8px;">Bu PIN'i oyuncuya iletin</div>
+          </div>
+        </div>
+
+        <div class="table-container" style="margin-top: 24px;">
+          <div class="table-header">
+            <h3>PIN Listesi</h3>
+          </div>
+          <table>
+            <thead>
+              <tr><th>PIN</th><th>Durum</th><th>Oluşturan</th><th>Kullanım</th><th>Son Kullanma</th><th>Oluşturma</th><th>İşlem</th></tr>
+            </thead>
+            <tbody id="pinsBody">
+              <tr><td colspan="7" class="empty-state">PIN bulunmuyor</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Scans -->
+      <div class="page-section" id="page-scans">
+        <div class="page-header">
+          <div>
+            <h1>Taramalar</h1>
+            <p class="subtitle">Tüm tarama kayıtları</p>
+          </div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr><th>Scan ID</th><th>Durum</th><th>Risk</th><th>Sürüm</th><th>Tespitler</th><th>Başlangıç</th><th>Tamamlanma</th><th>İşlem</th></tr>
+            </thead>
+            <tbody id="scansBody">
+              <tr><td colspan="8" class="empty-state">Tarama bulunmuyor</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Scan Detail -->
+      <div class="page-section" id="page-scan-detail">
+        <div class="page-header">
+          <div>
+            <h1>Tarama Detayı</h1>
+            <p class="subtitle" id="scanDetailId"></p>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="showPage('scans')" style="width:auto;">Geri Dön</button>
+        </div>
+
+        <div class="scan-detail-grid" id="scanDetailGrid"></div>
+
+        <h3 style="margin-bottom: 16px;">Tespitler</h3>
+        <div id="detectionsList"></div>
+
+        <h3 style="margin: 24px 0 16px;">Notlar</h3>
+        <div class="note-input-group">
+          <input type="text" class="form-input" id="noteInput" placeholder="Not ekle...">
+          <button class="btn btn-primary btn-sm" onclick="addNote()" style="width:auto;">Ekle</button>
+        </div>
+        <div id="notesList" style="margin-top: 12px;"></div>
+      </div>
+
+      <!-- Detections -->
+      <div class="page-section" id="page-detections">
+        <div class="page-header">
+          <div>
+            <h1>Tespitler</h1>
+            <p class="subtitle">Son tespitler</p>
+          </div>
+        </div>
+        <div id="allDetectionsList"></div>
+      </div>
+
+      <!-- Signatures -->
+      <div class="page-section" id="page-signatures">
+        <div class="page-header">
+          <div>
+            <h1>İmzalar</h1>
+            <p class="subtitle">Güvenlik imza veritabanı</p>
+          </div>
+          <button class="btn btn-primary btn-sm" id="createSigBtn" style="width:auto;">+ Yeni İmza</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr><th>İmza</th><th>Tür</th><th>Risk</th><th>Açıklama</th><th>Oluşturma</th><th>İşlem</th></tr>
+            </thead>
+            <tbody id="sigsBody">
+              <tr><td colspan="6" class="empty-state">İmza bulunmuyor</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="page-section" id="page-settings">
+        <div class="page-header">
+          <div>
+            <h1>Sistem Ayarları</h1>
+            <p class="subtitle">RwScanner yapılandırma ayarları</p>
+          </div>
+        </div>
+        <div class="settings-grid" id="settingsGrid"></div>
+        <button class="btn btn-primary btn-sm" onclick="saveSettings()" style="width:auto; margin-top: 24px;">Ayarları Kaydet</button>
+      </div>
+
+      <!-- Audit -->
+      <div class="page-section" id="page-audit">
+        <div class="page-header">
+          <div>
+            <h1>Audit Logları</h1>
+            <p class="subtitle">Sistem işlem kayıtları</p>
+          </div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr><th>Zaman</th><th>Kullanıcı</th><th>İşlem</th><th>Detay</th><th>IP</th></tr>
+            </thead>
+            <tbody id="auditBody">
+              <tr><td colspan="5" class="empty-state">Log bulunmuyor</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="createPinModal">
+    <div class="modal">
+      <h3>Yeni PIN Oluştur</h3>
+      <div class="form-group">
+        <label>Süre (Saat)</label>
+        <input type="number" class="form-input" id="pinExpiryHours" value="24" min="1">
+      </div>
+      <div class="form-group">
+        <label>Maksimum Kullanım</label>
+        <input type="number" class="form-input" id="pinMaxUses" value="1" min="1" max="10">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-sm" onclick="closeModal('createPinModal')">İptal</button>
+        <button class="btn btn-primary btn-sm" onclick="submitCreatePin()">Oluştur</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="createSigModal">
+    <div class="modal">
+      <h3>Yeni İmza Oluştur</h3>
+      <div class="form-group">
+        <label>İmza Kodu</label>
+        <input type="text" class="form-input" id="sigCode" placeholder="Örnek: suspicious_injector">
+      </div>
+      <div class="form-group">
+        <label>Tür</label>
+        <select class="form-input" id="sigType">
+          <option value="PROCESS">Process</option>
+          <option value="FILE">Dosya</option>
+          <option value="HASH">Hash</option>
+          <option value="SIGNATURE">İmza</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Risk Seviyesi</label>
+        <select class="form-input" id="sigRisk">
+          <option value="LOW">Düşük</option>
+          <option value="MEDIUM">Orta</option>
+          <option value="HIGH">Yüksek</option>
+          <option value="CRITICAL">Kritik</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Açıklama</label>
+        <input type="text" class="form-input" id="sigDescription" placeholder="İmza açıklaması">
+      </div>
+      <div class="form-group">
+        <label>Hash Değeri (İsteğe bağlı)</label>
+        <input type="text" class="form-input" id="sigHash" placeholder="SHA256 hash">
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline btn-sm" onclick="closeModal('createSigModal')">İptal</button>
+        <button class="btn btn-primary btn-sm" onclick="submitCreateSig()">Oluştur</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

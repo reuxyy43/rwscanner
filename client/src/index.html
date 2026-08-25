@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+  <title>RwScanner</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a0f;
+      color: #fff;
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    .titlebar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 12px;
+      -webkit-app-region: drag;
+      background: #0d0d14;
+      border-bottom: 1px solid #1a1a2e;
+    }
+
+    .titlebar-title {
+      font-size: 11px;
+      color: #555577;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .titlebar-buttons {
+      display: flex;
+      gap: 6px;
+      -webkit-app-region: no-drag;
+    }
+
+    .tb-btn {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: #555577;
+      cursor: pointer;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .tb-btn:hover { background: #1a1a2e; color: #aaa; }
+    .tb-btn.close:hover { background: #d63031; color: #fff; }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 50px;
+      height: calc(100vh - 41px);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glow {
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(108,92,231,0.25) 0%, transparent 70%);
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      animation: pulse 5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%,100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+      50% { opacity: 0.8; transform: translateX(-50%) scale(1.15); }
+    }
+
+    .content { position: relative; z-index: 1; text-align: center; width: 100%; padding: 0 40px; }
+
+    /* Rw Logo */
+    .logo {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 20px;
+      position: relative;
+    }
+
+    .logo-hex {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 40px rgba(108,92,231,0.4);
+    }
+
+    .logo-text {
+      font-size: 28px;
+      font-weight: 900;
+      color: #fff;
+      letter-spacing: -1px;
+      margin-top: -2px;
+    }
+
+    .logo-text span { color: rgba(255,255,255,0.7); font-weight: 600; }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 4px;
+      background: linear-gradient(135deg, #fff, #aaaacc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: #555577;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 36px;
+    }
+
+    /* Steps */
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-group label { display: block; font-size: 11px; color: #555577; margin-bottom: 6px; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    .pin-input {
+      width: 100%;
+      padding: 16px;
+      background: #12121a;
+      border: 2px solid #2a2a3e;
+      border-radius: 12px;
+      color: #6c5ce7;
+      font-size: 22px;
+      font-weight: 700;
+      text-align: center;
+      letter-spacing: 3px;
+      font-family: 'Consolas', 'Courier New', monospace;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .pin-input:focus {
+      border-color: #6c5ce7;
+      box-shadow: 0 0 0 4px rgba(108,92,231,0.2);
+    }
+
+    .pin-input::placeholder { color: #2a2a3e; letter-spacing: 0; font-size: 14px; font-weight: 400; }
+
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+      color: #fff;
+      box-shadow: 0 4px 24px rgba(108,92,231,0.4);
+    }
+
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(108,92,231,0.5); }
+    .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .error-msg {
+      background: rgba(214,48,49,0.1);
+      border: 1px solid rgba(214,48,49,0.3);
+      color: #e17055;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      margin-bottom: 14px;
+      display: none;
+    }
+
+    /* Status */
+    .status-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+    }
+
+    .status-icon.scanning {
+      border: 3px solid #6c5ce7;
+      background: rgba(108,92,231,0.1);
+      animation: spin 2s linear infinite;
+    }
+
+    .status-icon.done {
+      border: 3px solid #00b894;
+      background: rgba(0,184,148,0.1);
+      animation: none;
+    }
+
+    .status-icon.error {
+      border: 3px solid #e17055;
+      background: rgba(225,112,85,0.1);
+      animation: none;
+    }
+
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .status-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .status-msg { color: #555577; font-size: 13px; margin-bottom: 24px; }
+
+    .progress-track {
+      width: 100%;
+      height: 4px;
+      background: #1a1a2e;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6c5ce7, #a29bfe);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    .progress-text { font-size: 11px; color: #555577; }
+
+    .pin-hint {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .pin-hint span {
+      padding: 2px 6px;
+      background: #12121a;
+      border-radius: 4px;
+      font-size: 10px;
+      color: #555577;
+    }
+  </style>
+</head>
+<body>
+  <div class="titlebar">
+    <span class="titlebar-title">RwScanner</span>
+    <div class="titlebar-buttons">
+      <button class="tb-btn" onclick="rwscanner.minimize()">&#x2014;</button>
+      <button class="tb-btn close" onclick="rwscanner.close()">&#x2715;</button>
+    </div>
+  </div>
+
+  <div class="app">
+    <div class="glow"></div>
+    <div class="content">
+
+      <!-- Step 1: PIN -->
+      <div class="step active" id="step-pin">
+        <div class="logo">
+          <div class="logo-hex">
+            <div class="logo-text">R<span>w</span></div>
+          </div>
+        </div>
+        <h1>RwScanner</h1>
+        <div class="subtitle">FiveM Security Scanner</div>
+        <div class="error-msg" id="pinError"></div>
+        <div class="form-group">
+          <label>PIN Kodu</label>
+          <input type="text" class="pin-input" id="pinInput" placeholder="PIN kodunuzu girin"  autocomplete="off" spellcheck="false">
+        </div>
+        <button class="btn btn-primary" id="startBtn" onclick="startScan()">TARAMAYI BAŞLAT</button>
+        <div class="pin-hint">
+          <span>rw-xxxx-xxxx</span>
+          <span>v1.0.0</span>
+        </div>
+      </div>
+
+      <!-- Step 2: Scanning -->
+      <div class="step" id="step-scanning">
+        <div class="logo" style="margin-bottom: 24px;">
+          <div class="logo-hex">
+            <div class="logo-text">R<span>w</span></div>
+          </div>
+        </div>
+        <div class="status-icon scanning">&#x21BB;</div>
+        <div class="status-title" id="scanTitle">Tarama başlatılıyor...</div>
+        <div class="status-msg" id="scanMsg">Lütfen bekleyin</div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText">%0</div>
+      </div>
+
+      <!-- Step 3: Done -->
+      <div class="step" id="step-done">
+        <div class="logo" style="margin-bottom: 24px;">
+          <div class="logo-hex">
+            <div class="logo-text">R<span>w</span></div>
+          </div>
+        </div>
+        <div class="status-icon done">&#x2713;</div>
+        <div class="status-title">TARAMA TAMAMLANDI</div>
+        <div class="status-msg">
+          Sonuçlar yetkili paneline gönderildi.<br>
+          RwScanner'ı kapatabilirsiniz.
+        </div>
+      </div>
+
+      <!-- Step 4: Error -->
+      <div class="step" id="step-error">
+        <div class="logo" style="margin-bottom: 24px;">
+          <div class="logo-hex">
+            <div class="logo-text">R<span>w</span></div>
+          </div>
+        </div>
+        <div class="status-icon error">&#x2715;</div>
+        <div class="status-title" id="errorTitle">Bir hata oluştu</div>
+        <div class="status-msg" id="errorMsg"></div>
+        <button class="btn btn-primary" onclick="goToPin()" style="margin-top: 12px;">Tekrar Dene</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
