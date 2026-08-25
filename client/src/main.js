@@ -5,21 +5,22 @@ const http = require('http');
 const fs = require('fs');
 
 const SCANNER_VERSION = '1.0.0';
-let API_BASE = 'http://localhost:3000';
+let API_BASE = 'https://rwscanner.onrender.com';
 
-try {
-  const configPath = path.join(process.resourcesPath || __dirname, 'config.json');
-  if (fs.existsSync(configPath)) {
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-    if (config.api_url) API_BASE = config.api_url;
-  } else {
-    const localConfig = path.join(path.dirname(app.getPath('exe')), 'config.json');
-    if (fs.existsSync(localConfig)) {
-      const config = JSON.parse(fs.readFileSync(localConfig, 'utf8'));
-      if (config.api_url) API_BASE = config.api_url;
+const searchPaths = [
+  path.join(process.resourcesPath || '', 'config.json'),
+  path.join(path.dirname(app.getPath('exe')), 'config.json'),
+  path.join(__dirname, '..', 'config.json'),
+  path.join(__dirname, '..', '..', 'config.json')
+];
+for (const configPath of searchPaths) {
+  try {
+    if (fs.existsSync(configPath)) {
+      const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      if (config.api_url) { API_BASE = config.api_url; break; }
     }
-  }
-} catch (e) {}
+  } catch (e) {}
+}
 
 let mainWindow;
 
