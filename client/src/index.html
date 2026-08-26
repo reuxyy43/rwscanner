@@ -95,26 +95,12 @@
       position: relative;
     }
 
-    .logo-hex {
+    .logo img {
       width: 80px;
       height: 80px;
-      background: linear-gradient(135deg, #6c5ce7, #a29bfe);
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 8px 40px rgba(108,92,231,0.4);
+      object-fit: contain;
+      border-radius: 16px;
     }
-
-    .logo-text {
-      font-size: 28px;
-      font-weight: 900;
-      color: #fff;
-      letter-spacing: -1px;
-      margin-top: -2px;
-    }
-
-    .logo-text span { color: rgba(255,255,255,0.7); font-weight: 600; }
 
     h1 {
       font-size: 26px;
@@ -282,9 +268,7 @@
       <!-- Step 1: PIN -->
       <div class="step active" id="step-pin">
         <div class="logo">
-          <div class="logo-hex">
-            <div class="logo-text">R<span>w</span></div>
-          </div>
+          <img src="logo.png" alt="RwScanner">
         </div>
         <h1>RwScanner</h1>
         <div class="subtitle">FiveM Security Scanner</div>
@@ -303,9 +287,7 @@
       <!-- Step 2: Scanning -->
       <div class="step" id="step-scanning">
         <div class="logo" style="margin-bottom: 24px;">
-          <div class="logo-hex">
-            <div class="logo-text">R<span>w</span></div>
-          </div>
+          <img src="logo.png" alt="RwScanner">
         </div>
         <div class="status-icon scanning">&#x21BB;</div>
         <div class="status-title" id="scanTitle">Tarama başlatılıyor...</div>
@@ -319,9 +301,7 @@
       <!-- Step 3: Done -->
       <div class="step" id="step-done">
         <div class="logo" style="margin-bottom: 24px;">
-          <div class="logo-hex">
-            <div class="logo-text">R<span>w</span></div>
-          </div>
+          <img src="logo.png" alt="RwScanner">
         </div>
         <div class="status-icon done">&#x2713;</div>
         <div class="status-title">TARAMA TAMAMLANDI</div>
@@ -334,9 +314,7 @@
       <!-- Step 4: Error -->
       <div class="step" id="step-error">
         <div class="logo" style="margin-bottom: 24px;">
-          <div class="logo-hex">
-            <div class="logo-text">R<span>w</span></div>
-          </div>
+          <img src="logo.png" alt="RwScanner">
         </div>
         <div class="status-icon error">&#x2715;</div>
         <div class="status-title" id="errorTitle">Bir hata oluştu</div>
