@@ -65,7 +65,8 @@ async function startScan() {
       { name: 'Bütünlük + sistem kontrolü', fn: scanIntegrity },
       { name: 'İmza taraması', fn: scanSignatures },
       { name: 'Ağ + servis taraması', fn: scanNetwork },
-      { name: 'Otomatik başlangıç taraması', fn: scanStartup }
+      { name: 'Otomatik başlangıç taraması', fn: scanStartup },
+      { name: 'Kapsamlı dosya + USB + UEFI taraması', fn: scanDeepSystem }
     ];
 
     let allDetections = [];
@@ -952,6 +953,213 @@ async function scanStartup() {
             break;
           }
         }
+      });
+    }
+  } catch (e) {}
+
+  return d;
+}
+
+// 11. KAPSAMLI DOSYA + USB + UEFI TARAMASI
+// Tüm .exe dosyalarını toplar, UEFI/BIOS ve USB cihaz bilgilerini çeker, hile olanları işaretler.
+async function scanDeepSystem() {
+  const d = [];
+  const p = getPath();
+  const fs = getFs();
+  const os = getOs();
+  const home = os.homedir ? os.homedir() : '';
+
+  // ---- 1. USB / Disk cihaz bilgileri ----
+  try {
+    const disk = await runCmd('wmic diskdrive get Index,Model,InterfaceType,MediaType,SerialNumber,Status /FORMAT:CSV 2>nul');
+    if (disk && disk.trim().length > 10) {
+      const lines = disk.split('\n').filter(l => l.trim() && l.trim() !== 'Node,Index,Model,InterfaceType,MediaType,SerialNumber,Status');
+      lines.forEach(line => {
+        const cols = line.split(',').map(c => c.trim());
+        const model = cols[2] || '';
+        const itype = cols[3] || '';
+        const mtype = cols[4] || '';
+        const serial = cols[5] || '';
+        const isUSB = /usb|removable/i.test(itype + ' ' + mtype);
+        addDet(d, 'USB', 'Disk cihazı: ' + (model || 'Bilinmiyor'), 'Arayüz: ' + itype + ' | ' + mtype, isUSB ? 'MEDIUM' : 'LOW', {
+          model, interface_type: itype, media_type: mtype, serial, is_usb: isUSB
+        });
+      });
+    }
+  } catch (e) {}
+
+  try {
+    const ldisk = await runCmd('wmic logicaldisk get DeviceID,DriveType,FileSystem,VolumeName,FreeSpace,Size /FORMAT:CSV 2>nul');
+    if (ldisk && ldisk.trim().length > 10) {
+      const lines = ldisk.split('\n').filter(l => l.trim() && !/^Node,DeviceID/.test(l.trim()));
+      lines.forEach(line => {
+        const cols = line.split(',').map(c => c.trim());
+        const device = cols[1] || '';
+        const driveType = cols[2] || '';
+        const fsys = cols[3] || '';
+        const volName = cols[4] || '';
+        const size = parseInt(cols[7]) || 0;
+        const typeName = driveType === '2' ? 'Çıkarılabilir (USB)' : driveType === '3' ? 'Yerel Disk' : driveType === '5' ? 'CD-ROM' : 'Diğer: ' + driveType;
+        const isRemovable = driveType === '2';
+        addDet(d, 'USB', 'Bölüm: ' + device + ' (' + typeName + ')', 'Dosya sistemi: ' + (fsys || 'N/A') + (volName ? ' | Ad: ' + volName : ''), isRemovable ? 'MEDIUM' : 'LOW', {
+          device, drive_type: typeName, filesystem: fsys, volume_name: volName, size_bytes: size, is_removable: isRemovable
+        });
+      });
+    }
+  } catch (e) {}
+
+  // ---- 2. UEFI / BIOS bilgileri ----
+  try {
+    const bios = await runCmd('wmic bios get Manufacturer,Name,Version,SerialNumber,SMBIOSBIOSVersion,ReleaseDate /FORMAT:CSV 2>nul');
+    if (bios && bios.trim().length > 10) {
+      const lines = bios.split('\n').filter(l => l.trim() && !/^Node,Manufacturer/.test(l.trim()));
+      lines.forEach(line => {
+        const cols = line.split(',').map(c => c.trim());
+        const manuf = cols[1] || '';
+        const name = cols[2] || '';
+        const version = cols[3] || '';
+        const serial = cols[4] || '';
+        const smbios = cols[5] || '';
+        const release = cols[6] || '';
+        addDet(d, 'UEFI', 'BIOS/UEFI: ' + (manuf || 'Bilinmiyor'), 'Sürüm: ' + smbios + ' ' + version, 'LOW', {
+          manufacturer: manuf, name, version, serial, smbios_version: smbios, release_date: release, type: 'BIOS'
+        });
+      });
+    }
+  } catch (e) {}
+
+  try {
+    const bb = await runCmd('wmic baseboard get Manufacturer,Product,Version,SerialNumber /FORMAT:CSV 2>nul');
+    if (bb && bb.trim().length > 10) {
+      const lines = bb.split('\n').filter(l => l.trim() && !/^Node,Manufacturer/.test(l.trim()));
+      lines.forEach(line => {
+        const cols = line.split(',').map(c => c.trim());
+        addDet(d, 'UEFI', 'Anakart: ' + (cols[2] ? cols[1] + ' ' + cols[2] : cols[1]), 'Seri: ' + (cols[4] || 'N/A'), 'LOW', {
+          manufacturer: cols[1], product: cols[2], version: cols[3], serial: cols[4], type: 'BASEBOARD'
+        });
+      });
+    }
+  } catch (e) {}
+
+  // USB bağlantı geçmişi (registry Enum/USB)
+  try {
+    const usbSetup = await runCmd('reg query "HKLM\\SYSTEM\\CurrentControlSet\\Enum\\USB" /s /f "VID_" 2>nul');
+    if (usbSetup && usbSetup.trim().length > 20) {
+      const vids = new Set();
+      usbSetup.split('\n').forEach(l => {
+        const m = l.match(/VID_([0-9A-Fa-f]{4})&PID_([0-9A-Fa-f]{4})/);
+        if (m) vids.add(m[1].toUpperCase() + ':' + m[2].toUpperCase());
+      });
+      if (vids.size > 0) {
+        addDet(d, 'USB', 'USB cihaz geçmişi: ' + vids.size + ' benzersiz cihaz', 'Kayıtlı USB VID:PID listesi', 'LOW', { total_usb_devices: vids.size, device_ids: Array.from(vids).slice(0, 50) });
+      }
+    }
+  } catch (e) {}
+
+  // ---- 3. Tüm .exe dosya listesi (sistem dahil) ----
+  const homeUser = home.split('\\').pop();
+  const exeRoots = [
+    p.join(home, 'AppData', 'Local'),
+    p.join(home, 'Downloads'),
+    p.join(home, 'Desktop'),
+    p.join(home, 'Documents'),
+    p.join('C:', 'Program Files'),
+    p.join('C:', 'Program Files (x86)'),
+    p.join('C:', 'Users', homeUser, 'AppData', 'Roaming')
+  ];
+
+  const cheatExeKeywords = [
+    'inject', 'hack', 'cheat', 'exploit', 'trainer', 'aimbot', 'wallhack',
+    'speedhack', 'modmenu', 'noclip', 'godmode', 'spoofer', 'bypass',
+    'menu', 'loader', 'executor', 'luna', 'panther', 'spectrum', 'xenos'
+  ];
+  const criticalCheatKeywords = ['inject', 'hack', 'cheat', 'exploit', 'aimbot', 'wallhack', 'speedhack', 'spoofer', 'bypass', 'xenos', 'luna', 'panther', 'spectrum'];
+
+  let exeCount = 0;
+  const foundCheatExe = [];
+
+  for (const root of exeRoots) {
+    if (!root || !fs.existsSync(root)) continue;
+    try {
+      const walk = (dir, depth) => {
+        if (depth > 4) return;
+        try {
+          fs.readdirSync(dir, { withFileTypes: true }).forEach(entry => {
+            const full = p.join(dir, entry.name);
+            if (entry.isDirectory()) {
+              if (!entry.name.startsWith('.') && entry.name !== 'node_modules' && !entry.name.toLowerCase().includes('temporary')) {
+                walk(full, depth + 1);
+              }
+            } else if (entry.isFile()) {
+              const ext = p.extname(entry.name).toLowerCase();
+              if (ext === '.exe') {
+                exeCount++;
+                const base = p.basename(entry.name, ext).toLowerCase();
+                let risk = 'LOW';
+                let matched = '';
+                for (const kw of cheatExeKeywords) {
+                  if (base.includes(kw)) {
+                    risk = criticalCheatKeywords.includes(kw) ? 'HIGH' : 'MEDIUM';
+                    matched = kw;
+                    break;
+                  }
+                }
+                if (risk === 'LOW' && /dinput8|scripthookv|dsound|menyoo|nativeui|openiv|addonpawn/i.test(entry.name)) {
+                  risk = 'HIGH';
+                  matched = 'dll-loader';
+                }
+                if (risk !== 'LOW') {
+                  foundCheatExe.push({ name: entry.name, path: full, risk, matched });
+                }
+              }
+            }
+          });
+        } catch (e) {}
+      };
+      walk(root, 0);
+    } catch (e) {}
+  }
+
+  addDet(d, 'FULL_SCAN', 'Toplam tarama: ' + exeCount + ' çalıştırılabilir dosya incelendi', 'Sistemde bulunan tüm .exe dosyaları taranıp filtrelendi', 'LOW', { total_exe_scanned: exeCount });
+
+  foundCheatExe.forEach(exe => {
+    addDet(d, 'FILE', 'Şüpheli çalıştırılabilir: ' + exe.name, 'Kalıp: ' + exe.matched + ' | ' + exe.path, exe.risk, exe);
+  });
+
+  // ---- 4. USB üzerindeki çalıştırılabilir dosyalar ----
+  try {
+    const drives = await runCmd('wmic logicaldisk where "DriveType=2" get DeviceID /FORMAT:CSV 2>nul');
+    if (drives && drives.includes(':')) {
+      drives.split('\n').filter(l => l.includes(':')).forEach(line => {
+        const driveLetter = (line.split(',')[1] || line).trim();
+        if (!/^\w:/.test(driveLetter)) return;
+        try {
+          let usbExeCount = 0;
+          const walk = (dir, depth) => {
+            if (depth > 3) return;
+            try {
+              fs.readdirSync(dir, { withFileTypes: true }).forEach(entry => {
+                const full = p.join(dir, entry.name);
+                if (entry.isDirectory()) {
+                  walk(full, depth + 1);
+                } else if (entry.isFile()) {
+                  const ext = p.extname(entry.name).toLowerCase();
+                  const lower = entry.name.toLowerCase();
+                  if (ext === '.exe') {
+                    usbExeCount++;
+                    if (['inject', 'hack', 'cheat', 'exploit', 'trainer', 'aimbot', 'xenos', 'spoofer'].some(k => lower.includes(k))) {
+                      addDet(d, 'USB_FILE', 'USB\'de şüpheli çalıştırılabilir: ' + entry.name, full, 'CRITICAL', { name: entry.name, path: full, drive: driveLetter });
+                    }
+                  }
+                }
+              });
+            } catch (e) {}
+          };
+          walk(driveLetter + '\\', 0);
+          if (usbExeCount > 0) {
+            addDet(d, 'USB_FILE', 'USB cihazında ' + usbExeCount + ' çalıştırılabilir dosya bulundu', 'Sürücü: ' + driveLetter, 'MEDIUM', { drive: driveLetter, count: usbExeCount });
+          }
+        } catch (e) {}
       });
     }
   } catch (e) {}
