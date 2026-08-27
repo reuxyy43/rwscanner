@@ -563,7 +563,7 @@ function riskLabel(r) {
 }
 
 function detectionTypeLabel(t) {
-  const map = { PROCESS: 'Process', FILE: 'Dosya', SIGNATURE: 'İmza', INTEGRITY: 'Bütünlük', FIVEM: 'FiveM', RESOURCE: 'Kaynak' };
+  const map = { PROCESS: 'Process', FILE: 'Dosya', SIGNATURE: 'İmza', INTEGRITY: 'Bütünlük', FIVEM: 'FiveM', RESOURCE: 'Kaynak', MODULE: 'Modül', GTA: 'GTA', NETWORK: 'Ağ', SYSTEM: 'Sistem', STARTUP: 'Başlangıç', USB: 'USB Cihaz', UEFI: 'UEFI/BIOS', FULL_SCAN: 'Tarama Özeti', USB_FILE: 'USB Dosya' };
   return map[t] || t;
 }
 
